@@ -1,0 +1,21 @@
+log = console.log
+{ exec } = require 'child_process'
+
+task 'build', ->
+  build()
+
+build = ->
+  exec 'coffee -c -b -o dest src', (err, stdout, stderr)->
+    if err then log err
+    process.exit
+    exec 'uglifyjs -m -c --comments -o dest/jquery.verticalScroll.min.js dest/jquery.verticalScroll.js', (err, stdout, stderr)->
+      if err then log err
+      process.exit
+
+
+task 'clean', ->
+  clean()
+
+clean = ->
+  exec 'rm -rf dest/', (err, stdout, stderr)->
+
