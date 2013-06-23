@@ -17,7 +17,7 @@ Enable vertical scroll on htmlElement for Android.
 			});
 	</script>
 
->See also > [Demo](http://georgeosddev.github.io/jquery.verticalScroll.js/)
+>See also > [Demo](http://georgeosddev.github.io/jquery.verticalscroll.js/)
 
 
 ## License
