@@ -8,7 +8,7 @@ jquery.verticalScroll.js
     defaults =
       buffer:20
       duration:50
-      easing:"linerar"
+      easing:"linear"
       height:400
       response:"nomal"
       max:0
