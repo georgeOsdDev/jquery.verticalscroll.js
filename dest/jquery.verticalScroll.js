@@ -28,11 +28,12 @@ jquery.verticalScroll.js
         magnification = 0.5;
     }
     return $(this).each(function(i, el) {
-      var $el, emulate, endTouch, getInnerHeight, getTransformProp, getTransitionProp, handleTouchEnd, handleTouchMove, handleTouchStart, initialize, scroll, startTouch, transitionProp;
+      var $el, currentTransformY, emulate, endTouch, getInnerHeight, getTransformProp, getTransitionProp, handleTouchEnd, handleTouchMove, handleTouchStart, initialize, scroll, startTouch, transitionProp;
 
       $el = $(el);
       startTouch = {};
       endTouch = {};
+      currentTransformY = 0;
       getInnerHeight = function() {
         var ret;
 
@@ -53,10 +54,8 @@ jquery.verticalScroll.js
       }
       transitionProp = getTransitionProp();
       emulate = function() {
-        var currentTransformY, edY, matrix, nextTransformY, stY;
+        var edY, nextTransformY, stY;
 
-        matrix = new WebKitCSSMatrix($($el.children()[0]).css('-webkit-transform'));
-        currentTransformY = matrix.f;
         stY = startTouch.pageY || 0;
         edY = endTouch.pageY || 0;
         nextTransformY = currentTransformY + ((edY - stY) * magnification);
@@ -83,6 +82,10 @@ jquery.verticalScroll.js
         });
       };
       handleTouchStart = function(e) {
+        var matrix;
+
+        matrix = new WebKitCSSMatrix($($el.children()[0]).css('-webkit-transform'));
+        currentTransformY = matrix.f;
         return startTouch = endTouch = e.originalEvent.targetTouches[0] || {};
       };
       handleTouchMove = function(e) {
