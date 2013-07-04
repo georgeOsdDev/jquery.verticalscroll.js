@@ -24,6 +24,7 @@ jquery.verticalScroll.js
       $el = $(el)
       startTouch = {}
       endTouch = {}
+      currentTransformY = 0
 
       getInnerHeight = ->
         ret = 0;
@@ -41,8 +42,8 @@ jquery.verticalScroll.js
       transitionProp = getTransitionProp();
       emulate = ->
         # var matrix,currentTransformY,nextTransformY,stY,edY;
-        matrix = new WebKitCSSMatrix($($el.children()[0]).css('-webkit-transform'))
-        currentTransformY = matrix.f
+        # matrix = new WebKitCSSMatrix($($el.children()[0]).css('-webkit-transform'))
+        # currentTransformY = matrix.f
         stY = startTouch.pageY || 0
         edY = endTouch.pageY || 0
         nextTransformY = currentTransformY + ((edY - stY)*magnification)
@@ -71,6 +72,8 @@ jquery.verticalScroll.js
 
       handleTouchStart = (e) ->
         #e.preventDefault()
+        matrix = new WebKitCSSMatrix($($el.children()[0]).css('-webkit-transform'))
+        currentTransformY = matrix.f
         startTouch = endTouch = e.originalEvent.targetTouches[0] || {}
 
       handleTouchMove = (e) ->
