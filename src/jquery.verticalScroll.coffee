@@ -10,21 +10,24 @@ jquery.verticalScroll.js
       duration:50
       easing:"linear"
       height:400
-      response:"nomal"
       max:0
+      translate3d:false
+      maginification:0.5
 
     options = $.extend defaults, config
 
-    switch options.response
-      when "quick" then magnification = 1.0
-      when "lazy" then magnification = 0.3
-      else magnification = 0.5
+    switch options.magnification
+      when "quick" then options.magnification = 1.0
+      when "lazy" then options.magnification = 0.3
+      else
+        if isNaN(Number(options.magnification)) then options.magnification = 0.5
 
     $(@).each (i,el) ->
       $el = $(el)
       startTouch = {}
       endTouch = {}
       currentTransformY = 0
+      isEndTouch = false
 
       getInnerHeight = ->
         ret = 0;
@@ -36,7 +39,7 @@ jquery.verticalScroll.js
         "-webkit-transform #{(options.duration/1000)}s #{options.easing}"
 
       getTransformProp = (y) ->
-        "translate3d(0,#{y}px,0)"
+        if options.translate3d then "translate3d(0,#{y}px,0)" else "translateY(#{y}px)"
 
       if options.max is 0 then options.max = getInnerHeight();
       transitionProp = getTransitionProp();
@@ -46,7 +49,7 @@ jquery.verticalScroll.js
         # currentTransformY = matrix.f
         stY = startTouch.pageY || 0
         edY = endTouch.pageY || 0
-        nextTransformY = currentTransformY + ((edY - stY)*magnification)
+        nextTransformY = currentTransformY + ((edY - stY)*options.magnification)
 
         #top position
         if nextTransformY > options.buffer
@@ -63,6 +66,7 @@ jquery.verticalScroll.js
         scroll(nextTransformY)
 
       scroll = (nextTransformY) ->
+        if isEndTouch then return false
         #emulate scroll
         $el.children().each (i,e) ->
           $(e).css({
@@ -72,9 +76,11 @@ jquery.verticalScroll.js
 
       handleTouchStart = (e) ->
         #e.preventDefault()
+        isEndTouch = false
         matrix = new WebKitCSSMatrix($($el.children()[0]).css('-webkit-transform'))
         currentTransformY = matrix.f
-        startTouch = endTouch = e.originalEvent.targetTouches[0] || {}
+        startTouch = e.originalEvent.targetTouches[0] || {}
+        endTouch = e.originalEvent.targetTouches[0] || {}
 
       handleTouchMove = (e) ->
         e.preventDefault()
@@ -83,7 +89,14 @@ jquery.verticalScroll.js
 
       handleTouchEnd = (e) ->
         #e.preventDefault()
-        startTouch = endTouch = {}
+        if (options.magnification > 1)
+          lastTouch = e.originalEvent.changedTouches[0] || {}
+          if startTouch.pageY - endTouch.pageY > 0 then lastTouch.pageY = lastTouch.pageY-10 else lastTouch.pageY = lastTouch.pageY+10
+          endTouch.pageY = lastTouch.pageY
+          emulate()
+        isEndTouch = true
+        startTouch = {}
+        endTouch = {}
         false
 
       initialize = ->

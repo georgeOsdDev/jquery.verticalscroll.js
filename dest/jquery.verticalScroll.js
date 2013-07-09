@@ -6,34 +6,38 @@ jquery.verticalScroll.js
 */
 (function($) {
   $.fn.verticalScroll = function(config) {
-    var defaults, magnification, options;
+    var defaults, options;
 
     defaults = {
       buffer: 20,
       duration: 50,
       easing: "linear",
       height: 400,
-      response: "nomal",
-      max: 0
+      max: 0,
+      translate3d: false,
+      maginification: 0.5
     };
     options = $.extend(defaults, config);
-    switch (options.response) {
+    switch (options.magnification) {
       case "quick":
-        magnification = 1.0;
+        options.magnification = 1.0;
         break;
       case "lazy":
-        magnification = 0.3;
+        options.magnification = 0.3;
         break;
       default:
-        magnification = 0.5;
+        if (isNaN(Number(options.magnification))) {
+          options.magnification = 0.5;
+        }
     }
     return $(this).each(function(i, el) {
-      var $el, currentTransformY, emulate, endTouch, getInnerHeight, getTransformProp, getTransitionProp, handleTouchEnd, handleTouchMove, handleTouchStart, initialize, scroll, startTouch, transitionProp;
+      var $el, currentTransformY, emulate, endTouch, getInnerHeight, getTransformProp, getTransitionProp, handleTouchEnd, handleTouchMove, handleTouchStart, initialize, isEndTouch, scroll, startTouch, transitionProp;
 
       $el = $(el);
       startTouch = {};
       endTouch = {};
       currentTransformY = 0;
+      isEndTouch = false;
       getInnerHeight = function() {
         var ret;
 
@@ -47,7 +51,11 @@ jquery.verticalScroll.js
         return "-webkit-transform " + (options.duration / 1000) + "s " + options.easing;
       };
       getTransformProp = function(y) {
-        return "translate3d(0," + y + "px,0)";
+        if (options.translate3d) {
+          return "translate3d(0," + y + "px,0)";
+        } else {
+          return "translateY(" + y + "px)";
+        }
       };
       if (options.max === 0) {
         options.max = getInnerHeight();
@@ -58,7 +66,7 @@ jquery.verticalScroll.js
 
         stY = startTouch.pageY || 0;
         edY = endTouch.pageY || 0;
-        nextTransformY = currentTransformY + ((edY - stY) * magnification);
+        nextTransformY = currentTransformY + ((edY - stY) * options.magnification);
         if (nextTransformY > options.buffer) {
           nextTransformY = options.buffer;
           $el.one("touchend", function() {
@@ -74,6 +82,9 @@ jquery.verticalScroll.js
         return scroll(nextTransformY);
       };
       scroll = function(nextTransformY) {
+        if (isEndTouch) {
+          return false;
+        }
         return $el.children().each(function(i, e) {
           return $(e).css({
             webkitTransition: transitionProp,
@@ -84,9 +95,11 @@ jquery.verticalScroll.js
       handleTouchStart = function(e) {
         var matrix;
 
+        isEndTouch = false;
         matrix = new WebKitCSSMatrix($($el.children()[0]).css('-webkit-transform'));
         currentTransformY = matrix.f;
-        return startTouch = endTouch = e.originalEvent.targetTouches[0] || {};
+        startTouch = e.originalEvent.targetTouches[0] || {};
+        return endTouch = e.originalEvent.targetTouches[0] || {};
       };
       handleTouchMove = function(e) {
         e.preventDefault();
@@ -94,7 +107,21 @@ jquery.verticalScroll.js
         return emulate();
       };
       handleTouchEnd = function(e) {
-        startTouch = endTouch = {};
+        var lastTouch;
+
+        if (options.magnification > 1) {
+          lastTouch = e.originalEvent.changedTouches[0] || {};
+          if (startTouch.pageY - endTouch.pageY > 0) {
+            lastTouch.pageY = lastTouch.pageY - 10;
+          } else {
+            lastTouch.pageY = lastTouch.pageY + 10;
+          }
+          endTouch.pageY = lastTouch.pageY;
+          emulate();
+        }
+        isEndTouch = true;
+        startTouch = {};
+        endTouch = {};
         return false;
       };
       initialize = function() {
