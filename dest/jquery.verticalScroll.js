@@ -48,7 +48,10 @@ jquery.verticalScroll.js
         return ret;
       };
       getTransitionProp = function() {
-        return "-webkit-transform " + (options.duration / 1000) + "s " + options.easing;
+        var duration;
+
+        duration = ("" + (options.duration / 1000) + "s").replace("0.", ".");
+        return "-webkit-transform " + duration + " " + options.easing;
       };
       getTransformProp = function(y) {
         if (options.translate3d) {

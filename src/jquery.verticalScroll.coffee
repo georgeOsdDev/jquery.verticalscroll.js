@@ -36,7 +36,8 @@ jquery.verticalScroll.js
         ret;
 
       getTransitionProp = ->
-        "-webkit-transform #{(options.duration/1000)}s #{options.easing}"
+        duration = "#{(options.duration/1000)}s".replace("0.",".")
+        "-webkit-transform #{duration} #{options.easing}"
 
       getTransformProp = (y) ->
         if options.translate3d then "translate3d(0,#{y}px,0)" else "translateY(#{y}px)"
